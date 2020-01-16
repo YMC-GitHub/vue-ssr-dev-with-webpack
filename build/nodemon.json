@@ -1,0 +1,10 @@
+{
+  "watch": [
+    "src",
+    "build",
+    "public",
+    "app"
+  ],
+  "ext": "js,mjs,json,vue",
+  "exec": "cross-env NODE_ENV=development node app/server.js"
+}
