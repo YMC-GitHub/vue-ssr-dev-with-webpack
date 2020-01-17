@@ -26,18 +26,30 @@ const resolve = file => path.resolve(rootPath, file)
 
 const app = express()
 //use some express middlewares
-app.use(compression())
+app.use(compression({
+  threshold: 2048
+}))
 //app.use(logger('":method :url" :status :response-time ms - :res[content-length]'))
 app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
 
-app.use(favicon(isProd ? `${config.build.public}/favicon.ico` : `${config.dev.public}/favicon.ico`))
-// for static serve in public path
-app.use(express.static(isProd ? config.build.public : config.dev.public))
-// for static web serve in views path
-app.use(express.static(isProd ? config.build.www : config.dev.www))
+app.use(favicon(isProd ? `${config.build.public}/favicon.ico` : `${config.dev.public}/favicon.ico`, {
+  // set favicon cache max-age in milliseconds.
+  maxAge: isProd ? 1 * 1000 * 60 * 60 * 60 * 24 : 1000
+  // 1*1000*60*60*60*24
+  // n*ms*s*m*h*d*
+}))
+// static serve
+const serve = (filepath, cache) => express.static(resolve(filepath), {
+  // set browser cache max-age in milliseconds.
+  maxage: cache && isProd ? 60 * 60 * 24 * 30 : 0
+})
+// static serve for public dir
+app.use(serve(isProd ? config.build.public : config.dev.public, true))
+// static serve for dist dir
+app.use(serve(isProd ? config.build.www : config.dev.www, true))
 // for static web serve in views path
 //app.set('views', path.join(__dirname, 'views'))
 //app.engine('.ejs', require('ejs').__express)
